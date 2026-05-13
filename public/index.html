@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FanZone Live | Match Day Chatrooms</title>
+  <link rel="stylesheet" href="style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+  <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+</head>
+
+<body>
+
+  <div class="app-container">
+    <div id="login-screen" class="screen active">
+      <div class="glass-panel">
+        <div class="logo">
+          <h1>FanZone<span class="highlight">Live</span></h1>
+          <p>High-Velocity Match Day Experience</p>
+        </div>
+        <div class="input-group">
+          <input type="text" id="username-input" placeholder="Enter your username...">
+          <button id="login-btn" class="glow-btn">Join the Action</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="home-screen" class="screen">
+      <div class="glass-panel" style="max-width: 500px;">
+        <div class="logo">
+          <h2>Welcome to <span class="highlight">FanZone</span>!</h2>
+          <p>Logged in as <span id="welcome-username" class="highlight"></span></p>
+        </div>
+
+        <div class="room-actions" style="margin-top: 2rem;">
+
+          <div id="menu-options" style="display: flex; flex-direction: column; gap: 1rem;">
+            <button class="glow-btn premium-card" onclick="showSection('public-rooms-section')">
+              Browse Public Rooms
+            </button>
+            <button class="glow-btn premium-card" onclick="showSection('private-room-section')">
+              Join Private Room
+            </button>
+            <button class="glow-btn premium-card outline" onclick="showSection('create-room-section')">
+              Create New Room
+            </button>
+          </div>
+
+          <div id="public-rooms-section" class="section-block" style="display: none;">
+            <button class="back-btn" onclick="showMenu()">← Back</button>
+            <h3 style="margin-bottom: 1rem; color: var(--text-muted);">Public Rooms</h3>
+            <div id="public-rooms-list"
+              style="max-height: 150px; overflow-y: auto; background: rgba(0,0,0,0.2); border-radius: 8px; padding: 1rem;">
+              <p style="color: var(--text-muted); font-size: 0.9rem;">Loading public rooms...</p>
+            </div>
+          </div>
+
+          <div id="private-room-section" class="section-block" style="display: none;">
+            <button class="back-btn" onclick="showMenu()">← Back</button>
+            <h3 style="margin-bottom: 1rem; color: var(--text-muted);">Join Private Room</h3>
+            <div class="input-group" style="margin-bottom: 0.5rem;">
+              <input type="text" id="private-room-id" placeholder="Enter Room ID">
+            </div>
+            <div class="input-group">
+              <input type="password" id="private-room-password" placeholder="Enter Password">
+              <button id="join-private-btn" class="glow-btn">Join Room</button>
+            </div>
+          </div>
+
+          <div id="create-room-section" class="section-block" style="display: none;">
+            <button class="back-btn" onclick="showMenu()">← Back</button>
+            <h3 style="margin-bottom: 1rem; color: var(--text-muted);">Create a New Room</h3>
+            <div class="input-group" style="margin-bottom: 0.5rem;">
+              <input type="text" id="create-room-id" placeholder="Enter New Room ID">
+            </div>
+            <div style="margin-bottom: 0.5rem; display: flex; gap: 1rem; color: #fff;">
+              <label><input type="radio" name="room-type" value="public" checked> Public</label>
+              <label><input type="radio" name="room-type" value="private"> Private</label>
+            </div>
+            <div class="input-group" id="create-password-group" style="display: none; margin-bottom: 0.5rem;">
+              <input type="password" id="create-room-password" placeholder="Set Room Password">
+            </div>
+            <button id="create-room-btn" class="glow-btn outline" style="width: 100%;">Create Room</button>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <div id="chat-screen" class="screen">
+      <header class="chat-header">
+        <div class="match-info">
+          <h2>Room: <span class="highlight" id="room-name-display">...</span></h2>
+          <span class="live-badge">● LIVE</span>
+        </div>
+        <div class="user-info">
+          <span id="current-username"></span>
+        </div>
+      </header>
+
+      <div class="main-content">
+        <div class="sidebar">
+          <h3>Pinned Moments</h3>
+          <div id="pinned-messages" class="pinned-list">
+          </div>
+        </div>
+
+        <div class="chat-area">
+          <div id="messages-container" class="messages-container">
+          </div>
+          <div class="input-area">
+            <input type="file" id="image-upload-input" accept="image/png, image/jpeg, image/jpg, image/gif"
+              style="display: none;">
+            <button id="upload-icon-btn" class="icon-btn" title="Attach Image">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                stroke-linejoin="round">
+                <path
+                  d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48">
+                </path>
+              </svg>
+            </button>
+            <input type="text" id="message-input" placeholder="Yell something! (e.g. GOAAAAL!)" autocomplete="off">
+            <button id="send-btn" class="send-btn">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                stroke-linejoin="round">
+                <line x1="22" y1="2" x2="11" y2="13"></line>
+                <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+              </svg>
+            </button>
+          </div>
+          <div id="image-preview-container"
+            style="display: none; padding: 0.5rem 1.5rem; background: rgba(15, 23, 42, 0.9); border-top: 1px solid rgba(255, 255, 255, 0.05); align-items: center; gap: 1rem;">
+            <span style="font-size: 0.8rem; color: var(--text-muted);">Attached: <span id="preview-filename"
+                style="color: white; font-weight: bold;"></span></span>
+            <button id="remove-image-btn"
+              style="background: var(--danger); color: white; border: none; padding: 0.2rem 0.5rem; border-radius: 4px; cursor: pointer; font-size: 0.7rem;">Remove</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Image Modal -->
+  <div id="image-modal" class="modal" onclick="closeModal()">
+    <span class="close-modal">&times;</span>
+    <img class="modal-content" id="modal-img">
+  </div>
+
+  <script src="app.js"></script>
+</body>
+
+</html>
